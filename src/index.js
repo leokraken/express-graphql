@@ -144,6 +144,7 @@ function graphqlHTTP(options: Options): Middleware {
     let documentAST;
     let variables;
     let operationName;
+    let saveResult;
 
     // Promises are used as a mechanism for capturing any thrown errors during
     // the asynchronous process below.
@@ -179,6 +180,7 @@ function graphqlHTTP(options: Options): Middleware {
         pretty = optionsData.pretty;
         formatErrorFn = optionsData.formatError;
         extensionsFn = optionsData.extensions;
+        saveResult = optionsData.saveResult;
 
         let validationRules = specifiedRules;
         if (optionsData.validationRules) {
@@ -319,6 +321,11 @@ function graphqlHTTP(options: Options): Middleware {
         // where it will not is when showGraphiQL is true.
         if (!result) {
           throw httpError(500, 'Internal Error');
+        }
+
+        // Sets on request the result
+        if (saveResult) {
+          request.message = result;
         }
 
         // If "pretty" JSON isn't requested, and the server provides a
