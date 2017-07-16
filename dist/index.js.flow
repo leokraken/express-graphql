@@ -36,10 +36,10 @@ import type { $Request, $Response } from 'express';
  */
 export type Options =
   | ((
-    request: $Request,
-    response: $Response,
-    params?: GraphQLParams,
-  ) => OptionsResult)
+      request: $Request,
+      response: $Response,
+      params?: GraphQLParams,
+    ) => OptionsResult)
   | OptionsResult;
 export type OptionsResult = OptionsData | Promise<OptionsData>;
 export type OptionsData = {
@@ -92,6 +92,12 @@ export type OptionsData = {
    * A boolean to optionally enable GraphiQL mode.
    */
   graphiql?: ?boolean,
+
+  /**
+   * An optionally boolena to save result in response in order to be processed
+   * in next middleware execution.
+   */
+  saveResult?: ?boolean,
 };
 
 /**
