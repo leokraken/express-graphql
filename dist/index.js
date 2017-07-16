@@ -68,6 +68,7 @@ function graphqlHTTP(options) {
     var variables = void 0;
     var operationName = void 0;
     var saveResult = void 0;
+    var disableResponse = void 0;
 
     // Promises are used as a mechanism for capturing any thrown errors during
     // the asynchronous process below.
@@ -99,6 +100,7 @@ function graphqlHTTP(options) {
       formatErrorFn = optionsData.formatError;
       extensionsFn = optionsData.extensions;
       saveResult = optionsData.saveResult;
+      disableResponse = optionsData.disableResponse;
 
       var validationRules = _graphql.specifiedRules;
       if (optionsData.validationRules) {
@@ -227,15 +229,16 @@ function graphqlHTTP(options) {
       if (saveResult) {
         request.message = result;
       }
-
-      // If "pretty" JSON isn't requested, and the server provides a
-      // response.json method (express), use that directly.
-      // Otherwise use the simplified sendResponse method.
-      if (!pretty && typeof response.json === 'function') {
-        response.json(result);
-      } else {
-        var _payload = JSON.stringify(result, null, pretty ? 2 : 0);
-        sendResponse(response, 'application/json', _payload);
+      if (!disableResponse) {
+        // If "pretty" JSON isn't requested, and the server provides a
+        // response.json method (express), use that directly.
+        // Otherwise use the simplified sendResponse method.
+        if (!pretty && typeof response.json === 'function') {
+          response.json(result);
+        } else {
+          var _payload = JSON.stringify(result, null, pretty ? 2 : 0);
+          sendResponse(response, 'application/json', _payload);
+        }
       }
     });
   };
