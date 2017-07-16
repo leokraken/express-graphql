@@ -94,10 +94,15 @@ export type OptionsData = {
   graphiql?: ?boolean,
 
   /**
-   * An optionally boolena to save result in response in order to be processed
+   * An optionally boolean to save result in response in order to be processed
    * in next middleware execution.
    */
   saveResult?: ?boolean,
+  /**
+     * An optionally option to avoid this middleware send response, in order to
+     * delegates response function to another middleware
+     */
+  disableResponse?: ?boolean,
 };
 
 /**
@@ -151,6 +156,7 @@ function graphqlHTTP(options: Options): Middleware {
     let variables;
     let operationName;
     let saveResult;
+    let disableResponse;
 
     // Promises are used as a mechanism for capturing any thrown errors during
     // the asynchronous process below.
@@ -191,6 +197,7 @@ function graphqlHTTP(options: Options): Middleware {
         formatErrorFn = optionsData.formatError;
         extensionsFn = optionsData.extensions;
         saveResult = optionsData.saveResult;
+        disableResponse = optionsData.disableResponse;
 
         let validationRules = specifiedRules;
         if (optionsData.validationRules) {
@@ -337,15 +344,16 @@ function graphqlHTTP(options: Options): Middleware {
         if (saveResult) {
           request.message = result;
         }
-
-        // If "pretty" JSON isn't requested, and the server provides a
-        // response.json method (express), use that directly.
-        // Otherwise use the simplified sendResponse method.
-        if (!pretty && typeof response.json === 'function') {
-          response.json(result);
-        } else {
-          const payload = JSON.stringify(result, null, pretty ? 2 : 0);
-          sendResponse(response, 'application/json', payload);
+        if (!disableResponse) {
+          // If "pretty" JSON isn't requested, and the server provides a
+          // response.json method (express), use that directly.
+          // Otherwise use the simplified sendResponse method.
+          if (!pretty && typeof response.json === 'function') {
+            response.json(result);
+          } else {
+            const payload = JSON.stringify(result, null, pretty ? 2 : 0);
+            sendResponse(response, 'application/json', payload);
+          }
         }
       });
   };
